@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    int id;
+    char group[4];
+} Donor;
+
+typedef struct {
+    Donor *data;
+    int size;
+    int capacity;
+} DonorList;
+
+int add_donor(DonorList *list, int id, const char *group)
+{
+    if (list->size == list->capacity) {
+        int newCapacity = (list->capacity == 0) ? 2 : list->capacity * 2;
+        Donor *p = realloc(list->data, newCapacity * sizeof(Donor));
+
+        if (p == NULL)
+            return 0;
+
+        list->data = p;
+        list->capacity = newCapacity;
+    }
+
+    list->data[list->size].id = id;
+    snprintf(list->data[list->size].group,
+             sizeof list->data[list->size].group, "%s", group);
+    list->size++;
+    return 1;
+}
+
+int main(void)
+{
+    DonorList list = {NULL, 0, 0};
+    const char *groups[] = {"O+", "A-", "B+", "AB+", "O-"};
+
+    for (int i = 0; i < 5; i++) {
+        int id = 7001 + i;
+        if (!add_donor(&list, id, groups[i])) {
+            printf("Memory allocation failed.\n");
+            free(list.data);
+            return 1;
+        }
+
+        printf("added %d (%s): size = %d, capacity = %d\n",
+               id, groups[i], list.size, list.capacity);
+    }
+
+    free(list.data);
+    return 0;
+}
+
+SAMPLE OUTPUT:
+added 7001 (O+): size = 1, capacity = 2
+added 7002 (A-): size = 2, capacity = 2
+added 7003 (B+): size = 3, capacity = 4
+added 7004 (AB+): size = 4, capacity = 4
+added 7005 (O-): size = 5, capacity = 8
